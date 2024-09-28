@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: space-between; /* Align children with space in-between */
+            padding: 20px;
+        }
+
+        #summary {
+            width: 30%; /* Width of the sidebar */
+            background-color: #f4f4f4; /* Light gray background for the summary section */
+            padding: 15px; /* Padding inside the summary section */
+            border: 1px solid #ccc; /* Border for the summary section */
+            margin-right: 20px; /* Space between the summary and quiz */
+            border-radius: 8px; /* Rounded corners */
+        }
+
+        #quiz {
+            width: 65%; /* Width of the quiz section */
+        }
+
+        h1, h2, h3 {
+            color: #333; /* Dark color for headings */
+        }
+    </style>
+</head>
+<body>
+    <div id="summary">
+        <h2>Summary</h2>
+        {% if summary %}
+            <p>{{ summary }}</p>
+        {% else %}
+            <p>No summary available.</p>
+        {% endif %}
+    </div>
+
+    <div id="quiz">
+        <h1>Quiz</h1>
+        <form method="POST" action="/submit_quiz">
+            {% for question in questions %}
+                <h3>Question {{ loop.index }}: {{ question }}</h3>
+                
+                <label>
+                    <input type="radio" name="q{{ loop.index }}" value="{{ options[loop.index0][0] }}">
+                    {{ options[loop.index0][0] }}
+                </label><br>
+            
+                <label>
+                    <input type="radio" name="q{{ loop.index }}" value="{{ options[loop.index0][1] }}">
+                    {{ options[loop.index0][1] }}
+                </label><br>
+            
+                <label>
+                    <input type="radio" name="q{{ loop.index }}" value="{{ options[loop.index0][2] }}">
+                    {{ options[loop.index0][2] }}
+                </label><br>
+            
+                <label>
+                    <input type="radio" name="q{{ loop.index }}" value="{{ options[loop.index0][3] }}">
+                    {{ options[loop.index0][3] }}
+                </label><br>
+            
+                <br>
+            {% endfor %}
+            
+            <button type="submit">Submit Quiz</button>
+        </form>    
+    </div>
+</body>
+</html>
