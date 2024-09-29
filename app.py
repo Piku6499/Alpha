@@ -12,23 +12,23 @@ app.secret_key = 'supersecretkey'
 tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
 model = AutoModelForSeq2SeqLM.from_pretrained("facebook/bart-large-cnn")
 
-# Initialize Educhain client
+
 gemini = ChatGoogleGenerativeAI(
     model="gemini-1.5-pro-002",
-    api_key="AIzaSyDPvXj9Tfn6wZ6w9qGfq5XNjOlOiz_qxlc"  # Make sure to put your API key here
+    api_key="AIzaSyDPvXj9Tfn6wZ6w9qGfq5XNjOlOiz_qxlc"  
 )
 
 gemini_config = LLMConfig(custom_model=gemini)
 client = Educhain(gemini_config)
 
-# Function to extract MCQs into lists
+
 def mcqs_to_lists(mcq_list):
     question_list = []
     options_list = []
     correct_answers = []
     for i, mcq in enumerate(mcq_list.questions):
         question_str = f"{mcq.question}"
-        options_str = [option for option in mcq.options]  # Options without numbers
+        options_str = [option for option in mcq.options]  
         question_list.append(question_str)
         options_list.append(options_str)
         correct_answers.append(mcq.answer)
@@ -54,10 +54,7 @@ def MYS():
                 pdf_text += page.extract_text()
 
         try:
-            #response = requests.get(pdf_url)
-            #response.raise_for_status()  # Check for HTTP errors
             
-            # Generate MCQs using Educhain client
             mcqs_from_url = client.qna_engine.generate_questions_from_data(
                 source=pdf_text,
                 source_type="text",
@@ -65,21 +62,20 @@ def MYS():
             )
             
             inputs = tokenizer(pdf_text, return_tensors="pt", max_length=1024, truncation=True)
-            summary_ids = model.generate(inputs["input_ids"], max_length=150, min_length=40, length_penalty=2.0, num_beams=4, early_stopping=True)
+            summary_ids = model.generate(inputs["input_ids"], max_length=700, min_length=40, length_penalty=2.0, num_beams=4, early_stopping=False)
             summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True) 
             session['summary'] = summary
             print("SUMMARY:")
             print(summary[:50])
 
-            # Extract questions, options, and correct answers
+           
             questions, options, correct_answers = mcqs_to_lists(mcqs_from_url)
             print(correct_answers)
-            # Save questions, options, and correct answers to session
+           
             session['questions'] = questions
             session['options'] = options
             session['correct_answers'] = correct_answers
 
-            # Redirect to the quiz page
             return redirect(url_for('quiz'))
 
         except Exception as e:
@@ -91,7 +87,6 @@ def MYS():
 
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
-    # Retrieve questions and options from session
     questions = session.get('questions')
     options = session.get('options')
     summary = session.get('summary') 
@@ -108,24 +103,23 @@ def submit_quiz():
     score = 0
     feedback = []
 
-    # Retrieve correct answers from session
     correct_answers = session.get('correct_answers')
     questions = session.get('questions')
     if not correct_answers or not questions:
         return "No quiz data found. Please upload a PDF."
 
-    # Evaluate the user's answers
+  
     for idx, correct_answer in enumerate(correct_answers):
-        user_answer = request.form.get(f'q{idx+1}') # This will now be the option string the user selected
-        print(f"User answer for Q{idx + 1}: {user_answer}")  # Debugging line to check user answers
-        print(f"Correct answer for Q{idx + 1}: {correct_answer}")  # Debugging line to check correct answers
+        user_answer = request.form.get(f'q{idx+1}') 
+        print(f"User answer for Q{idx + 1}: {user_answer}")  
+        print(f"Correct answer for Q{idx + 1}: {correct_answer}")  
         if user_answer and user_answer == correct_answer:
             score += 1
-            feedback.append(f"Question {idx + 1}: Correct!!! {correct_answer}.")
+            feedback.append(f"Question {idx + 1}: Correct!!! 😊 {correct_answer}.")
         else:
-            feedback.append(f"Question {idx + 1}: Incorrect. The correct answer was :{correct_answer}.")
+            feedback.append(f"Question {idx + 1}: Incorrect 😞. The correct answer was :{correct_answer}.")
 
-    # Render the results page
+    
     return render_template('quiz_result.html', score=score, total=len(questions), feedback=feedback)
 
 
